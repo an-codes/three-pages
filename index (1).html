@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bookclub Trzy Strony</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#FF7FAE">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Trzy Strony">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fredoka:wght@400;500;600&family=Pacifico&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFF5F8;
+    --card: #FFFFFF;
+    --ink: #5A2A4A;
+    --muted: #8F6682;
+    --line: #FFD3E2;
+    --pink: #FF7FAE;
+    --pink-soft: #FFE0EC;
+    --lav: #A98BEA;
+    --lav-soft: #EBE2FF;
+    --mint: #3FB894;
+    --mint-soft: #D5F2E7;
+    --butter: #FFF1B8;
+    --star: #FFB830;
+    --tone: var(--pink);
+    --tone-soft: var(--pink-soft);
+    --tone-text: #D6457F;
+    --glow1: #FFCFE2;
+    --glow2: #E1D4FF;
+    --glow3: #D2F3E5;
+    --glow4: #FFE9B8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #231328;
+      --card: #3A2142;
+      --ink: #FFE6F1;
+      --muted: #D2A9C6;
+      --line: #5A3563;
+      --pink: #FF8FB8;
+      --pink-soft: #5A2D4C;
+      --lav: #BBA2F5;
+      --lav-soft: #43336B;
+      --mint: #5FD1AE;
+      --mint-soft: #25503F;
+      --butter: #5B4F2E;
+      --glow1: #5A2D4C;
+      --glow2: #3F3070;
+      --glow3: #1F4A3E;
+      --glow4: #4A3F2A;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--bg); }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: "Fredoka", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  /* Tło: miękkie, pastelowe plamy koloru + delikatny wzór z książeczek, serduszek i iskierek */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180' fill='none'%3E%3Cpath d='M34 40c-5-6-14 1-8 7l8 8 8-8c6-6-3-13-8-7z' fill='%23FF7FAE' fill-opacity='.22'/%3E%3Cpath d='M124 30l2.4 5.6 5.6 2.4-5.6 2.4-2.4 5.6-2.4-5.6-5.6-2.4 5.6-2.4z' fill='%23A98BEA' fill-opacity='.3'/%3E%3Cg transform='translate(86 112) rotate(-8)' stroke='%23A07591' stroke-opacity='.3' stroke-width='1.6' stroke-linejoin='round'%3E%3Cpath d='M0 4q9-5 15 0v13q-6-4-15 0zM15 4q6-5 15 0v13q-9-4-15 0z' fill='%23FFFFFF' fill-opacity='.35'/%3E%3C/g%3E%3Ccircle cx='28' cy='128' r='3' fill='%233FB894' fill-opacity='.28'/%3E%3Ccircle cx='152' cy='96' r='2.4' fill='%23FF7FAE' fill-opacity='.3'/%3E%3Cpath d='M150 150l1.6 3.6 3.6 1.6-3.6 1.6-1.6 3.6-1.6-3.6-3.6-1.6 3.6-1.6z' fill='%233FB894' fill-opacity='.3'/%3E%3C/svg%3E"),
+      radial-gradient(60% 50% at 8% 0%, var(--glow1) 0%, transparent 72%),
+      radial-gradient(55% 45% at 100% 8%, var(--glow2) 0%, transparent 72%),
+      radial-gradient(60% 50% at 0% 100%, var(--glow3) 0%, transparent 72%),
+      radial-gradient(55% 45% at 100% 100%, var(--glow4) 0%, transparent 72%);
+    background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 28px 18px 90px; }
+
+  header { text-align: center; margin-bottom: 22px; }
+  h1 {
+    font-family: "Pacifico", cursive; font-weight: 400;
+    font-size: clamp(2.6rem, 11vw, 4rem); line-height: 1.15; margin: 0 0 30px;
+    color: var(--pink); text-shadow: 3px 3px 0 var(--lav-soft);
+  }
+  h1 .sub {
+    display: block; margin-bottom: -4px;
+    font-family: "Caveat", cursive; font-weight: 700; font-size: clamp(1.5rem, 6vw, 2rem);
+    color: var(--lav); text-shadow: none; letter-spacing: .02em;
+  }
+  .who { display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 6px; background: var(--card); border: 2px dashed var(--line); border-radius: 999px; padding: 6px 8px 6px 16px; font-size: 14px; color: var(--muted); }
+  .who button {
+    font: inherit; font-weight: 500; border: 0; background: transparent; color: var(--ink);
+    padding: 6px 14px; border-radius: 999px; cursor: pointer;
+  }
+  .who button[aria-pressed="true"] { color: #fff; }
+  .who button[data-slot="0"][aria-pressed="true"] { background: var(--pink); }
+  .who button[data-slot="1"][aria-pressed="true"] { background: var(--lav); }
+  .who button[data-slot="2"][aria-pressed="true"] { background: var(--mint); }
+
+  .who[hidden] { display: none; }
+  .who .logout { font-size: 13px; color: var(--muted); text-decoration: underline; padding: 6px 10px; }
+
+  /* Logowanie */
+  body.locked .wrap { display: none; }
+  .login { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 24px 18px; }
+  .login[hidden] { display: none; }
+  .login-card {
+    width: 100%; max-width: 380px; background: var(--card); border: 2px solid var(--line); border-radius: 26px;
+    box-shadow: 0 6px 0 var(--pink-soft); padding: 28px 22px 24px; display: grid; gap: 14px; text-align: center;
+  }
+  .login-card h2 {
+    font-family: "Pacifico", cursive; font-weight: 400; font-size: 2.2rem; line-height: 1.15; margin: 0 0 4px;
+    color: var(--pink); text-shadow: 2px 2px 0 var(--lav-soft);
+  }
+  .login-card h2 .sub { display: block; font-family: "Caveat", cursive; font-weight: 700; font-size: 1.5rem; color: var(--lav); text-shadow: none; margin-bottom: -2px; }
+  .login-q { margin: 0; color: var(--muted); font-size: 14px; }
+  .login-names { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .login-names button {
+    font: inherit; font-weight: 500; border: 2px solid var(--line); background: var(--bg); color: var(--ink);
+    padding: 8px 16px; border-radius: 999px; cursor: pointer;
+  }
+  .login-names button[aria-pressed="true"] { color: #fff; border-color: transparent; }
+  .login-names button[data-slot="0"][aria-pressed="true"] { background: var(--pink); }
+  .login-names button[data-slot="1"][aria-pressed="true"] { background: var(--lav); }
+  .login-names button[data-slot="2"][aria-pressed="true"] { background: var(--mint); }
+  .login-card label { text-align: left; }
+  .login-card .primary { justify-self: center; min-width: 160px; }
+  .login-err { margin: 0; min-height: 1.4em; font-size: 14px; color: #C2306B; }
+  @media (prefers-color-scheme: dark) { .login-err { color: #FF9CC0; } }
+
+  .banner { background: var(--butter); border-radius: 16px; padding: 10px 16px; margin-bottom: 20px; font-size: 14px; color: #5A2A4A; }
+
+  .filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+  .filters button {
+    font: inherit; font-size: 14px; border: 2px solid var(--line); background: var(--card); color: var(--muted);
+    padding: 6px 14px; border-radius: 999px; cursor: pointer;
+  }
+  .filters button[aria-pressed="true"] { background: var(--pink); border-color: var(--pink); color: #fff; }
+
+  button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible, li[role="option"]:focus-visible {
+    outline: 3px solid var(--lav); outline-offset: 2px;
+  }
+
+  /* Formularz */
+  details.add { background: var(--card); border-radius: 26px; border: 2px solid var(--line); margin-bottom: 26px; box-shadow: 0 6px 0 var(--pink-soft); }
+  details.add summary { cursor: pointer; list-style: none; padding: 16px 22px; font-weight: 600; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; }
+  details.add summary::-webkit-details-marker { display: none; }
+  details.add summary::after {
+    content: "+"; width: 30px; height: 30px; border-radius: 50%; background: var(--pink); color: #fff;
+    display: grid; place-items: center; font-size: 20px; line-height: 1;
+  }
+  details.add[open] summary::after { content: "–"; background: var(--lav); }
+  .form { padding: 0 22px 22px; display: grid; gap: 14px; }
+  label { display: grid; gap: 5px; font-size: 14px; font-weight: 500; }
+  input[type=text], input[type=password], textarea {
+    font: inherit; color: var(--ink); background: var(--bg);
+    border: 2px solid var(--line); border-radius: 16px; padding: 10px 14px; width: 100%;
+  }
+  textarea { min-height: 90px; resize: vertical; }
+  .hint { font-weight: 400; color: var(--muted); font-size: 13px; }
+  .suggest { list-style: none; margin: 0; padding: 0; border: 2px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--bg); }
+  .suggest:empty { display: none; }
+  .suggest li { display: flex; gap: 10px; align-items: center; padding: 8px 12px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--line); }
+  .suggest li:last-child { border-bottom: 0; }
+  .suggest li:hover { background: var(--pink-soft); }
+  .suggest img { width: 28px; height: 42px; object-fit: cover; border-radius: 4px; background: var(--line); }
+  .suggest .nocover { width: 28px; height: 42px; border-radius: 4px; background: var(--line); }
+  .picked { display: none; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+  .picked.on { display: flex; }
+  .picked img { width: 28px; height: 42px; object-fit: cover; border-radius: 4px; }
+  .primary {
+    font: inherit; font-weight: 600; border: 0; border-radius: 999px; padding: 12px 24px; cursor: pointer;
+    background: var(--pink); color: #fff; justify-self: start; box-shadow: 0 4px 0 #E0558A;
+  }
+  .primary:active { transform: translateY(3px); box-shadow: 0 1px 0 #E0558A; }
+  .primary:disabled { opacity: .5; cursor: default; }
+  .ghost { font: inherit; font-size: 13px; background: none; border: 0; color: var(--muted); cursor: pointer; padding: 4px 0; text-decoration: underline; }
+
+  /* Karty */
+  .list { display: grid; gap: 22px; }
+  .rec {
+    position: relative;
+    background: var(--card); border-radius: 26px; border: 2px solid var(--tone-soft);
+    box-shadow: 0 6px 0 var(--tone-soft);
+    padding: 22px 18px 18px; display: grid; grid-template-columns: 96px 1fr; gap: 18px;
+  }
+  .rec[data-slot="0"] { --tone: var(--pink); --tone-soft: var(--pink-soft); --tone-text: #D6457F; }
+  .rec[data-slot="1"] { --tone: var(--lav); --tone-soft: var(--lav-soft); --tone-text: #7D5BD0; }
+  .rec[data-slot="2"] { --tone: var(--mint); --tone-soft: var(--mint-soft); --tone-text: #1E8A68; }
+  @media (prefers-color-scheme: dark) { .rec { --tone-text: var(--ink) !important; } }
+  .rec::before {
+    content: ""; position: absolute; top: -10px; left: 24px; width: 64px; height: 20px;
+    background: var(--butter); opacity: .9; transform: rotate(-4deg); border-radius: 3px;
+  }
+  .coverbox { transform: rotate(-3deg); align-self: start; }
+  .cover { display: block; width: 96px; height: 144px; border-radius: 8px; object-fit: cover; background: var(--line); box-shadow: 4px 4px 0 var(--tone-soft); }
+  .fallback {
+    width: 96px; height: 144px; border-radius: 8px; background: var(--tone); color: #fff;
+    display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px;
+    font-weight: 600; font-size: 14px; line-height: 1.2; overflow: hidden; box-shadow: 4px 4px 0 var(--tone-soft);
+  }
+  .from {
+    display: inline-block; background: var(--tone-soft); color: var(--tone-text); font-weight: 600; font-size: 13px;
+    padding: 2px 12px; border-radius: 999px; margin-bottom: 6px;
+  }
+  .rec h2 { font-weight: 600; font-size: 1.3rem; line-height: 1.2; margin: 0; }
+  .by { color: var(--muted); font-size: 14px; margin: 2px 0 10px; }
+  .note {
+    margin: 0; padding: 12px 14px; background: var(--butter); border-radius: 6px 18px 18px 18px;
+    font-family: "Caveat", cursive; font-weight: 500; font-size: 1.35rem; line-height: 1.2;
+    white-space: pre-wrap; overflow-wrap: anywhere; color: #5A2A4A;
+  }
+
+  /* Oceny */
+  .ratings { margin-top: 12px; display: grid; gap: 2px; }
+  .rater { display: flex; align-items: center; gap: 10px; font-size: 14px; min-height: 36px; }
+  .rater .nm { width: 52px; font-weight: 500; color: var(--muted); }
+  .rater.me .nm { color: var(--ink); }
+  .stars { display: flex; gap: 0; }
+  .stars button, .stars span {
+    background: none; border: 0; padding: 0 1px; font-size: 24px; line-height: 1; color: var(--line); font-family: inherit;
+  }
+  .stars button { cursor: pointer; padding: 6px 2px; }
+  .stars .on { color: var(--star); }
+  .unread { color: var(--muted); font-size: 13px; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+  .empty { text-align: center; color: var(--muted); padding: 40px 10px; font-family: "Caveat", cursive; font-size: 1.6rem; }
+  .toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+    background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: 14px;
+    opacity: 0; pointer-events: none; transition: opacity .2s; max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 480px) {
+    .rec { grid-template-columns: 76px 1fr; gap: 14px; padding: 22px 14px 16px; }
+    .cover, .fallback { width: 76px; height: 114px; }
+    .fallback { font-size: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="login" id="login" hidden>
+  <div class="login-card">
+    <h2><span class="sub">bookclub</span>Trzy Strony</h2>
+    <p class="login-q">Kim jesteś?</p>
+    <div class="login-names" id="loginNames" role="group" aria-label="Kim jesteś?"></div>
+    <label>Hasło
+      <input type="password" id="loginPass" autocomplete="current-password" enterkeyhint="go">
+    </label>
+    <button class="primary" id="loginGo" type="button">Zaloguj</button>
+    <p class="login-err" id="loginErr" role="alert"></p>
+  </div>
+</div>
+<div class="wrap">
+  <header>
+    <h1><span class="sub">bookclub</span>Trzy Strony</h1>
+    <div class="who" role="group" aria-label="Kim jesteś?" id="who"><span>Jestem</span></div>
+  </header>
+
+  <div class="banner" id="demoBanner" hidden>
+    <b>Tryb demo.</b> Książki zapisują się tylko w tej przeglądarce. Dodaj dane Firebase w pliku <code>index.html</code>, żebyście wszystkie widziały tę samą listę (kroki są w README).
+  </div>
+
+  <details class="add" id="addBox">
+    <summary>Poleć książkę</summary>
+    <div class="form">
+      <label>Tytuł
+        <input type="text" id="fTitle" autocomplete="off" placeholder="Zacznij pisać, żeby wyszukać" maxlength="200">
+      </label>
+      <ul class="suggest" id="suggest" role="listbox" aria-label="Pasujące książki"></ul>
+      <div class="picked" id="picked"><img id="pickedImg" alt=""><span id="pickedText"></span></div>
+      <label>Autor
+        <input type="text" id="fAuthor" autocomplete="off" maxlength="150">
+      </label>
+      <label>Dlaczego ją pokochasz?
+        <textarea id="fBlurb" maxlength="600" placeholder="Kilka zdań, żeby ją sprzedać"></textarea>
+      </label>
+      <button class="primary" id="fSave" type="button">Dodaj polecenie</button>
+    </div>
+  </details>
+
+  <div class="filters" id="filters" role="group" aria-label="Filtruj polecenia"></div>
+  <div class="list" id="list" aria-live="polite"></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ============ KONFIGURACJA: edytuj tę część ============ */
+const NAMES = ["Ania", "Zosia", "Asia"];
+
+// Adresy logowania to ania@trzystrony.app, zosia@trzystrony.app, asia@trzystrony.app.
+// To nie są prawdziwe skrzynki pocztowe, tylko loginy. Zakładasz je w Firebase (patrz README).
+const LOGIN_DOMAIN = "trzystrony.app";
+const loginEmail = (i) =>
+  NAMES[i].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") + "@" + LOGIN_DOMAIN;
+
+// Wklej obiekt konfiguracji z Firebase (Ustawienia projektu > Twoje aplikacje > Aplikacja internetowa).
+// Zostaw apiKey puste, żeby wypróbować tryb demo (zapis tylko w tej przeglądarce).
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDaY7dGK6FqxZrAAaht3EGa1y0FZSzhb98",
+  authDomain: "trzy-strony-a23d1.firebaseapp.com",
+  projectId: "trzy-strony-a23d1",
+  storageBucket: "trzy-strony-a23d1.firebasestorage.app",
+  messagingSenderId: "407931454893",
+  appId: "1:407931454893:web:627123153481048377cd24"
+};
+/* ======================================================== */
+
+const LIVE = Boolean(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId);
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* polska odmiana: 1 gwiazdka, 2-4 gwiazdki, 5 gwiazdek */
+const gwiazdki = (n) => n === 1 ? "1 gwiazdka" : (n >= 2 && n <= 4 ? `${n} gwiazdki` : `${n} gwiazdek`);
+
+/* ---------- zapis lokalny (nie rzuca błędów, gdy przeglądarka blokuje) ---------- */
+const mem = {};
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return mem[k] ?? null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { mem[k] = v; } },
+};
+
+/* ---------- warstwa danych ----------
+   Każde api ma: subscribe(cb), add(rec), remove(id), rate(id, name, gwiazdki|null) */
+function localApi() {
+  let listener = () => {};
+  const read = () => JSON.parse(store.get("recs") || "[]");
+  const write = (all) => { store.set("recs", JSON.stringify(all)); listener(all); };
+  return {
+    subscribe(cb) { listener = cb; cb(read()); },
+    async add(rec) { write([{ ...rec, ratings: {}, id: crypto.randomUUID() }, ...read()]); },
+    async remove(id) { write(read().filter((x) => x.id !== id)); },
+    async rate(id, name, n) {
+      write(read().map((x) => {
+        if (x.id !== id) return x;
+        const ratings = { ...(x.ratings || {}) };
+        if (n) ratings[name] = n; else delete ratings[name];
+        return { ...x, ratings };
+      }));
+    },
+  };
+}
+
+async function firebaseApi() {
+  const V = "10.14.1";
+  const [{ initializeApp }, fs, au] = await Promise.all([
+    import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),
+    import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`),
+    import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`),
+  ]);
+  const app = initializeApp(FIREBASE_CONFIG);
+  const db = fs.getFirestore(app);
+  const auth = au.getAuth(app);          // sesja zapamiętana na urządzeniu, dopóki się nie wylogujesz
+  const col = fs.collection(db, "recs");
+  return {
+    auth: {
+      onChange(cb) { return au.onAuthStateChanged(auth, cb); },
+      signIn(slot, password) { return au.signInWithEmailAndPassword(auth, loginEmail(slot), password); },
+      signOut() { return au.signOut(auth); },
+    },
+    subscribe(cb, onError) {
+      return fs.onSnapshot(
+        fs.query(col, fs.orderBy("createdAt", "desc")),
+        (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+        onError
+      );
+    },
+    async add(rec) { await fs.addDoc(col, { ...rec, ratings: {}, createdAt: fs.serverTimestamp() }); },
+    async remove(id) { await fs.deleteDoc(fs.doc(db, "recs", id)); },
+    async rate(id, name, n) {
+      await fs.updateDoc(fs.doc(db, "recs", id), { [`ratings.${name}`]: n ? n : fs.deleteField() });
+    },
+  };
+}
+
+/* ---------- stan ---------- */
+let api = null;
+let recs = [];
+let me = store.get("me") === null ? null : Number(store.get("me"));
+if (LIVE || ![0, 1, 2].includes(me)) me = null;   // z logowaniem tożsamość pochodzi z konta, nie z pamięci przeglądarki
+let filter = "all";            // all | 0 | 1 | 2
+let picked = null;             // { cover_id }
+const slotOf = (name) => NAMES.indexOf(name);
+
+/* ---------- kim jestem ---------- */
+function renderWho() {
+  const box = $("who");
+  if (LIVE) {
+    box.hidden = me === null;
+    box.innerHTML = me === null ? "" :
+      `<span>Zalogowana jako <b>${esc(NAMES[me])}</b></span><button type="button" id="logout" class="logout">Wyloguj</button>`;
+    const out = $("logout");
+    if (out) out.addEventListener("click", () => api && api.auth.signOut());
+    return;
+  }
+  box.innerHTML = `<span>Jestem</span>` + NAMES.map((n, i) =>
+    `<button type="button" data-slot="${i}" aria-pressed="${me === i}">${esc(n)}</button>`).join("");
+  box.querySelectorAll("button").forEach((b) =>
+    b.addEventListener("click", () => { me = Number(b.dataset.slot); store.set("me", me); renderWho(); renderList(); }));
+}
+
+/* ---------- filtry ---------- */
+function renderFilters() {
+  const opts = [["all", "Wszystkie"], ...NAMES.map((n, i) => [String(i), n])];
+  $("filters").innerHTML = opts.map(([v, l]) =>
+    `<button type="button" data-v="${v}" aria-pressed="${filter === v}">${esc(l)}</button>`).join("");
+  $("filters").querySelectorAll("button").forEach((b) =>
+    b.addEventListener("click", () => { filter = b.dataset.v; renderFilters(); renderList(); }));
+}
+
+/* ---------- lista ---------- */
+function coverHTML(r) {
+  const inner = r.cover_id
+    ? `<img class="cover" loading="lazy" alt="Okładka: ${esc(r.title)}" src="https://covers.openlibrary.org/b/id/${Number(r.cover_id)}-M.jpg">`
+    : `<div class="fallback" aria-hidden="true">${esc(r.title)}</div>`;
+  return `<div class="coverbox">${inner}</div>`;
+}
+function ratersHTML(r, slot) {
+  const ratings = r.ratings || {};
+  return NAMES.map((name, i) => {
+    if (i === slot) return "";
+    const val = Number(ratings[name]) || 0;
+    const isMe = i === me;
+    let stars;
+    if (isMe) {
+      stars = `<div class="stars" role="group" aria-label="Twoja ocena">` + [1, 2, 3, 4, 5].map((n) =>
+        `<button type="button" data-act="rate" data-id="${esc(r.id)}" data-n="${n}" class="${n <= val ? "on" : ""}" aria-label="${gwiazdki(n)}" aria-pressed="${n === val}">★</button>`).join("") + `</div>`;
+    } else if (val) {
+      stars = `<div class="stars" role="img" aria-label="${val} na 5">` + [1, 2, 3, 4, 5].map((n) =>
+        `<span class="${n <= val ? "on" : ""}" aria-hidden="true">★</span>`).join("") + `</div>`;
+    } else {
+      stars = `<span class="unread">jeszcze nie oceniła</span>`;
+    }
+    return `<div class="rater ${isMe ? "me" : ""}"><span class="nm">${isMe ? "Ty" : esc(name)}</span>${stars}</div>`;
+  }).join("");
+}
+function renderList() {
+  const shown = recs.filter((r) => filter === "all" || String(slotOf(r.from_name)) === filter);
+  if (!shown.length) {
+    $("list").innerHTML = `<div class="empty">${recs.length ? "Nic tu jeszcze nie ma" : "Na razie pusto. Poleć pierwszą książkę!"}</div>`;
+    return;
+  }
+  $("list").innerHTML = shown.map((r) => {
+    const slot = slotOf(r.from_name);
+    const mine = slot === me;
+    return `<article class="rec" data-slot="${slot}">
+      ${coverHTML(r)}
+      <div>
+        <span class="from">${esc(r.from_name)} poleca</span>
+        <h2>${esc(r.title)}</h2>
+        ${r.author ? `<div class="by">${esc(r.author)}</div>` : ""}
+        ${r.blurb ? `<p class="note">${esc(r.blurb)}</p>` : ""}
+        <div class="ratings">${ratersHTML(r, slot)}</div>
+        ${mine ? `<div class="row"><button class="ghost" data-act="del" data-id="${esc(r.id)}">Usuń</button></div>` : ""}
+      </div>
+    </article>`;
+  }).join("");
+}
+$("list").addEventListener("click", async (e) => {
+  const b = e.target.closest("button[data-act]");
+  if (!b || !api) return;
+  try {
+    if (b.dataset.act === "rate") {
+      if (me === null) return toast("Najpierw kliknij swoje imię na górze");
+      const r = recs.find((x) => x.id === b.dataset.id);
+      const n = Number(b.dataset.n);
+      const current = Number((r.ratings || {})[NAMES[me]]) || 0;
+      await api.rate(b.dataset.id, NAMES[me], n === current ? null : n);   // ta sama gwiazdka drugi raz = usuń ocenę
+    } else if (b.dataset.act === "del") {
+      if (!confirm("Usunąć to polecenie?")) return;
+      await api.remove(b.dataset.id); toast("Usunięto");
+    }
+  } catch (err) { toast("Coś poszło nie tak. Spróbuj ponownie"); console.error(err); }
+});
+
+/* ---------- formularz + wyszukiwarka Open Library ---------- */
+let t;
+$("fTitle").addEventListener("input", () => {
+  picked = null; $("picked").classList.remove("on");
+  clearTimeout(t);
+  const q = $("fTitle").value.trim();
+  if (q.length < 3) { $("suggest").innerHTML = ""; return; }
+  t = setTimeout(() => search(q), 400);
+});
+async function search(q) {
+  try {
+    const r = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=5&fields=title,author_name,cover_i`);
+    const data = await r.json();
+    if ($("fTitle").value.trim() !== q) return;
+    $("suggest")._docs = data.docs || [];
+    $("suggest").innerHTML = $("suggest")._docs.map((d, i) => `
+      <li role="option" tabindex="0" data-i="${i}">
+        ${d.cover_i ? `<img alt="" src="https://covers.openlibrary.org/b/id/${d.cover_i}-S.jpg">` : `<span class="nocover"></span>`}
+        <span><b>${esc(d.title)}</b>${d.author_name ? `<br><span class="hint">${esc(d.author_name[0])}</span>` : ""}</span>
+      </li>`).join("");
+  } catch { $("suggest").innerHTML = ""; }
+}
+function pick(i) {
+  const d = ($("suggest")._docs || [])[i]; if (!d) return;
+  $("fTitle").value = d.title;
+  $("fAuthor").value = d.author_name ? d.author_name[0] : "";
+  picked = { cover_id: d.cover_i || null };
+  $("suggest").innerHTML = "";
+  if (d.cover_i) {
+    $("pickedImg").src = `https://covers.openlibrary.org/b/id/${d.cover_i}-S.jpg`;
+    $("pickedText").textContent = "Znaleziono okładkę";
+    $("picked").classList.add("on");
+  }
+}
+$("suggest").addEventListener("click", (e) => { const li = e.target.closest("li"); if (li) pick(Number(li.dataset.i)); });
+$("suggest").addEventListener("keydown", (e) => {
+  const li = e.target.closest("li");
+  if (li && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pick(Number(li.dataset.i)); }
+});
+
+$("fSave").addEventListener("click", async () => {
+  if (me === null) return toast("Najpierw kliknij swoje imię na górze");
+  if (!api) return toast("Jeszcze się łączę. Spróbuj za chwilę");
+  const title = $("fTitle").value.trim();
+  if (!title) return toast("Dodaj tytuł");
+  $("fSave").disabled = true;
+  try {
+    await api.add({
+      from_name: NAMES[me], title,
+      author: $("fAuthor").value.trim() || null,
+      blurb: $("fBlurb").value.trim() || null,
+      cover_id: picked?.cover_id || null,
+    });
+    ["fTitle", "fAuthor", "fBlurb"].forEach((id) => ($(id).value = ""));
+    picked = null; $("picked").classList.remove("on"); $("suggest").innerHTML = "";
+    $("addBox").open = false;
+    toast("Dodano!");
+  } catch (err) { toast("Nie udało się zapisać. Spróbuj ponownie"); console.error(err); }
+  $("fSave").disabled = false;
+});
+
+/* ---------- różne ---------- */
+function toast(msg) {
+  const el = $("toast"); el.textContent = msg; el.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove("show"), 2400);
+}
+
+/* ---------- start ---------- */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+$("demoBanner").hidden = LIVE;
+renderWho();
+renderFilters();
+renderList();
+let unsub = null;
+function startData() {
+  stopData();
+  unsub = api.subscribe((list) => { recs = list; renderList(); },
+    (err) => { console.error(err); toast("Nie udało się wczytać książek. Sprawdź reguły Firebase"); }) || null;
+}
+function stopData() { if (unsub) { unsub(); unsub = null; } }
+
+/* ---------- logowanie ---------- */
+let loginSlot = null;
+function renderLoginNames() {
+  $("loginNames").innerHTML = NAMES.map((n, i) =>
+    `<button type="button" data-slot="${i}" aria-pressed="${loginSlot === i}">${esc(n)}</button>`).join("");
+  $("loginNames").querySelectorAll("button").forEach((b) =>
+    b.addEventListener("click", () => { loginSlot = Number(b.dataset.slot); renderLoginNames(); $("loginPass").focus(); }));
+}
+async function doLogin() {
+  const err = $("loginErr");
+  err.textContent = "";
+  if (!api) { err.textContent = "Jeszcze się łączę. Spróbuj za chwilę."; return; }
+  if (loginSlot === null) { err.textContent = "Wybierz, kim jesteś."; return; }
+  const pass = $("loginPass").value;
+  if (!pass) { err.textContent = "Wpisz hasło."; return; }
+  $("loginGo").disabled = true;
+  try {
+    await api.auth.signIn(loginSlot, pass);
+    $("loginPass").value = "";
+  } catch (e) {
+    const code = e && e.code || "";
+    err.textContent =
+      code === "auth/too-many-requests" ? "Za dużo prób. Poczekaj chwilę i spróbuj jeszcze raz." :
+      code === "auth/network-request-failed" ? "Brak połączenia z internetem." :
+      code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found" || code === "auth/invalid-login-credentials"
+        ? "Nieprawidłowe hasło. Spróbuj jeszcze raz." : "Nie udało się zalogować. Spróbuj ponownie.";
+    console.error(e);
+  }
+  $("loginGo").disabled = false;
+}
+$("loginGo").addEventListener("click", doLogin);
+$("loginPass").addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
+
+(async () => {
+  try {
+    if (!LIVE) { api = localApi(); startData(); return; }
+
+    document.body.classList.add("locked");        // dopóki nie wiadomo, kto jest zalogowany
+    renderLoginNames();
+    api = await firebaseApi();
+    api.auth.onChange((user) => {
+      stopData();
+      const slot = user ? NAMES.findIndex((_, i) => loginEmail(i) === user.email) : -1;
+      if (user && slot >= 0) {
+        me = slot;
+        $("login").hidden = true;
+        document.body.classList.remove("locked");
+        renderWho(); renderList();
+        startData();
+      } else {
+        me = null; recs = [];
+        if (user) api.auth.signOut();             // konto spoza Waszej trójki
+        document.body.classList.add("locked");
+        $("login").hidden = false;
+        renderWho(); renderList();
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    toast("Nie udało się połączyć z Firebase. Sprawdź konfigurację");
+  }
+})();
+</script>
+</body>
+</html>
