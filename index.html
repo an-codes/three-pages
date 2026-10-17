@@ -12,10 +12,15 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Nunito:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/nunito.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/caveat.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/pacifico.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+  /* Fonty wgrane razem z aplikacją: każdy w jednym pliku z pełnym zestawem polskich liter */
+  @font-face { font-family: "Nunito"; src: url("fonts/nunito.woff2") format("woff2"); font-weight: 200 1000; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Caveat"; src: url("fonts/caveat.woff2") format("woff2"); font-weight: 400 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Pacifico"; src: url("fonts/pacifico.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+
   :root {
     --bg: #FFF5F8;
     --card: #FFFFFF;
@@ -63,7 +68,7 @@
   body {
     margin: 0;
     color: var(--ink);
-    font-family: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;
+    font-family: "Nunito", system-ui, sans-serif;
     font-size: 16px;
     line-height: 1.5;
   }
