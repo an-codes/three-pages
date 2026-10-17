@@ -214,6 +214,16 @@
   }
   .stars button { cursor: pointer; padding: 6px 2px; }
   .stars .on { color: var(--star); }
+  .rater-block { display: grid; }
+  .cmt {
+    margin: 0 0 6px 62px; padding: 8px 14px; background: var(--note-bg); border: 2px solid var(--note-line);
+    border-radius: 18px 18px 18px 6px; font-size: 14px; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  .cbtn { justify-self: start; margin: 0 0 4px 62px; }
+  .cform { margin: 4px 0 8px 62px; display: grid; gap: 8px; }
+  .cinput { min-height: 64px; }
+  .crow { display: flex; align-items: center; gap: 14px; }
+  .primary.small { padding: 8px 18px; font-size: 14px; box-shadow: 0 3px 0 #E0558A; }
   .unread { color: var(--muted); font-size: 13px; }
   .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
   .ver { text-align: center; color: var(--muted); font-size: 12px; opacity: .6; margin: 34px 0 0; }
@@ -227,6 +237,8 @@
   .toast.show { opacity: 1; }
 
   @media (max-width: 480px) {
+    .cmt, .cbtn { margin-left: 0; }
+    .cform { margin-left: 0; }
     .rec { grid-template-columns: 76px minmax(0, 1fr); gap: 14px; padding: 22px 14px 16px; }
     .cover, .fallback { width: 76px; height: 114px; }
     .fallback { font-size: 12px; }
@@ -274,7 +286,7 @@
   <div class="filters" id="filters" role="group" aria-label="Filtruj polecenia"></div>
   <div class="list" id="list"></div>
   <div class="empty" id="empty" role="status" hidden></div>
-  <p class="ver">wersja 5</p>
+  <p class="ver">wersja 6</p>
 </div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -324,6 +336,14 @@ function localApi() {
     subscribe(cb) { listener = cb; cb(read()); },
     async add(rec) { write([{ ...rec, ratings: {}, id: crypto.randomUUID() }, ...read()]); },
     async remove(id) { write(read().filter((x) => x.id !== id)); },
+    async comment(id, name, text) {
+      write(read().map((x) => {
+        if (x.id !== id) return x;
+        const comments = { ...(x.comments || {}) };
+        if (text) comments[name] = text; else delete comments[name];
+        return { ...x, comments };
+      }));
+    },
     async rate(id, name, n) {
       write(read().map((x) => {
         if (x.id !== id) return x;
@@ -364,6 +384,9 @@ async function firebaseApi() {
     async rate(id, name, n) {
       await fs.updateDoc(fs.doc(db, "recs", id), { [`ratings.${name}`]: n ? n : fs.deleteField() });
     },
+    async comment(id, name, text) {
+      await fs.updateDoc(fs.doc(db, "recs", id), { [`comments.${name}`]: text ? text : fs.deleteField() });
+    },
   };
 }
 
@@ -374,6 +397,8 @@ let me = store.get("me") === null ? null : Number(store.get("me"));
 if (LIVE || ![0, 1, 2].includes(me)) me = null;   // z logowaniem tożsamość pochodzi z konta, nie z pamięci przeglądarki
 let filter = "all";            // all | 0 | 1 | 2
 let picked = null;             // { cover_id }
+let editing = null;            // id książki, przy której właśnie piszesz komentarz
+const drafts = {};             // id -> niezapisany tekst komentarza
 const slotOf = (name) => NAMES.indexOf(name);
 
 /* ---------- kim jestem ---------- */
@@ -410,22 +435,38 @@ function coverHTML(r) {
   return `<div class="coverbox">${inner}</div>`;
 }
 function ratersHTML(r, slot) {
-  const ratings = r.ratings || {};
+  const ratings = r.ratings || {}, comments = r.comments || {};
+  const id = esc(r.id);
   return NAMES.map((name, i) => {
     if (i === slot) return "";
     const val = Number(ratings[name]) || 0;
     const isMe = i === me;
+    const text = String(comments[name] || "");
     let stars;
     if (isMe) {
       stars = `<div class="stars" role="group" aria-label="Twoja ocena">` + [1, 2, 3, 4, 5].map((n) =>
-        `<button type="button" data-act="rate" data-id="${esc(r.id)}" data-n="${n}" class="${n <= val ? "on" : ""}" aria-label="${gwiazdki(n)}" aria-pressed="${n === val}">★</button>`).join("") + `</div>`;
+        `<button type="button" data-act="rate" data-id="${id}" data-n="${n}" class="${n <= val ? "on" : ""}" aria-label="${gwiazdki(n)}" aria-pressed="${n === val}">★</button>`).join("") + `</div>`;
     } else if (val) {
       stars = `<div class="stars" role="img" aria-label="${val} na 5">` + [1, 2, 3, 4, 5].map((n) =>
         `<span class="${n <= val ? "on" : ""}" aria-hidden="true">★</span>`).join("") + `</div>`;
     } else {
       stars = `<span class="unread">jeszcze nie oceniła</span>`;
     }
-    return `<div class="rater ${isMe ? "me" : ""}"><span class="nm">${isMe ? "Ty" : esc(name)}</span>${stars}</div>`;
+
+    let extra = "";
+    if (isMe && editing === r.id) {
+      const draft = drafts[r.id] !== undefined ? drafts[r.id] : text;
+      extra = `<div class="cform">
+        <textarea class="cinput" data-id="${id}" maxlength="300" rows="2" placeholder="Krótki komentarz, np. co Ci się podobało">${esc(draft)}</textarea>
+        <div class="crow">
+          <button type="button" class="primary small" data-act="csave" data-id="${id}">Zapisz</button>
+          <button type="button" class="ghost" data-act="ccancel" data-id="${id}">Anuluj</button>
+        </div></div>`;
+    } else {
+      if (text) extra += `<p class="cmt">${esc(text)}</p>`;
+      if (isMe) extra += `<button type="button" class="ghost cbtn" data-act="cedit" data-id="${id}">${text ? "Edytuj komentarz" : "Dodaj komentarz"}</button>`;
+    }
+    return `<div class="rater-block"><div class="rater ${isMe ? "me" : ""}"><span class="nm">${isMe ? "Ty" : esc(name)}</span>${stars}</div>${extra}</div>`;
   }).join("");
 }
 /* Karty są tworzone raz i potem tylko aktualizowane, więc okładki nie ładują się na nowo.
@@ -469,12 +510,16 @@ function renderList() {
     }
 
     // 2) oceny: przerysowujemy tylko gwiazdki, i tylko gdy się zmieniły
-    const rsig = JSON.stringify([r.ratings || {}, me, slot]);
+    const rsig = JSON.stringify([r.ratings || {}, r.comments || {}, me, slot, editing === r.id]);
     if (c.rsig !== rsig) {
       const box = c.el.querySelector(".ratings");
-      const focused = box.contains(document.activeElement) ? document.activeElement.dataset.n : null;
+      const ae = document.activeElement;
+      const inBox = box.contains(ae);
+      const focused = inBox ? ae.dataset.n : null;
+      const typing = inBox && ae.matches && ae.matches("textarea.cinput");
       box.innerHTML = ratersHTML(r, slot);
       if (focused) { const b = box.querySelector(`button[data-n="${focused}"]`); if (b) b.focus(); }
+      if (typing) { const ta = box.querySelector("textarea.cinput"); if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } }
       c.rsig = rsig;
     }
 
@@ -507,6 +552,9 @@ function renderList() {
   empty.hidden = visible > 0;
   if (!visible) empty.textContent = recs.length ? "Nic tu jeszcze nie ma" : "Na razie pusto. Poleć pierwszą książkę!";
 }
+$("list").addEventListener("input", (e) => {
+  if (e.target.matches && e.target.matches("textarea.cinput")) drafts[e.target.dataset.id] = e.target.value;
+});
 $("list").addEventListener("click", async (e) => {
   const b = e.target.closest("button[data-act]");
   if (!b || !api) return;
@@ -517,6 +565,24 @@ $("list").addEventListener("click", async (e) => {
       const n = Number(b.dataset.n);
       const current = Number((r.ratings || {})[NAMES[me]]) || 0;
       await api.rate(b.dataset.id, NAMES[me], n === current ? null : n);   // ta sama gwiazdka drugi raz = usuń ocenę
+    } else if (b.dataset.act === "cedit") {
+      if (me === null) return;
+      const r = recs.find((x) => x.id === b.dataset.id);
+      editing = b.dataset.id;
+      drafts[editing] = String((r && r.comments && r.comments[NAMES[me]]) || "");
+      renderList();
+      const ta = document.querySelector(`textarea.cinput[data-id="${editing}"]`);
+      if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+    } else if (b.dataset.act === "ccancel") {
+      delete drafts[b.dataset.id]; editing = null; renderList();
+    } else if (b.dataset.act === "csave") {
+      if (me === null) return;
+      const ta = document.querySelector(`textarea.cinput[data-id="${b.dataset.id}"]`);
+      const text = (ta ? ta.value : "").trim();
+      b.disabled = true;
+      await api.comment(b.dataset.id, NAMES[me], text || null);
+      delete drafts[b.dataset.id]; editing = null; renderList();
+      toast(text ? "Komentarz zapisany" : "Komentarz usunięty");
     } else if (b.dataset.act === "del") {
       if (!confirm("Usunąć to polecenie?")) return;
       await api.remove(b.dataset.id); toast("Usunięto");
