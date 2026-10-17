@@ -1,6 +1,6 @@
 /* Prosty service worker: zapamiętuje powłokę aplikacji, żeby startowała od razu.
    Dane (Firestore) i wyszukiwarka książek zawsze idą przez sieć. Zmień VERSION, gdy wypuszczasz nową wersję. */
-const VERSION = "trzy-strony-v2";
+const VERSION = "trzy-strony-v4";
 const SHELL = [
   "./",
   "index.html",

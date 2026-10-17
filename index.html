@@ -6,6 +6,7 @@
 <title>Bookclub Trzy Strony</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#FF7FAE">
+<meta name="color-scheme" content="light">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Trzy Strony">
@@ -33,35 +34,18 @@
     --lav-soft: #EBE2FF;
     --mint: #3FB894;
     --mint-soft: #D5F2E7;
-    --butter: #FFF1B8;
+    --note-bg: #F7E8FB;
+    --note-line: #E6CBF5;
+    --tape: rgba(169, 139, 234, .38);
     --star: #FFB830;
     --tone: var(--pink);
     --tone-soft: var(--pink-soft);
     --tone-text: #D6457F;
+    color-scheme: light;
     --glow1: #FFCFE2;
     --glow2: #E1D4FF;
     --glow3: #D2F3E5;
-    --glow4: #FFE9B8;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #231328;
-      --card: #3A2142;
-      --ink: #FFE6F1;
-      --muted: #D2A9C6;
-      --line: #5A3563;
-      --pink: #FF8FB8;
-      --pink-soft: #5A2D4C;
-      --lav: #BBA2F5;
-      --lav-soft: #43336B;
-      --mint: #5FD1AE;
-      --mint-soft: #25503F;
-      --butter: #5B4F2E;
-      --glow1: #5A2D4C;
-      --glow2: #3F3070;
-      --glow3: #1F4A3E;
-      --glow4: #4A3F2A;
-    }
+    --glow4: #E3D2FF;
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; background: var(--bg); }
@@ -135,7 +119,6 @@
   .login-card label { text-align: left; }
   .login-card .primary { justify-self: center; min-width: 160px; }
   .login-err { margin: 0; min-height: 1.4em; font-size: 14px; color: #C2306B; }
-  @media (prefers-color-scheme: dark) { .login-err { color: #FF9CC0; } }
 
 
   .filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
@@ -197,10 +180,9 @@
   .rec[data-slot="0"] { --tone: var(--pink); --tone-soft: var(--pink-soft); --tone-text: #D6457F; }
   .rec[data-slot="1"] { --tone: var(--lav); --tone-soft: var(--lav-soft); --tone-text: #7D5BD0; }
   .rec[data-slot="2"] { --tone: var(--mint); --tone-soft: var(--mint-soft); --tone-text: #1E8A68; }
-  @media (prefers-color-scheme: dark) { .rec { --tone-text: var(--ink) !important; } }
   .rec::before {
     content: ""; position: absolute; top: -10px; left: 24px; width: 64px; height: 20px;
-    background: var(--butter); opacity: .9; transform: rotate(-4deg); border-radius: 3px;
+    background: var(--tape); transform: rotate(-4deg); border-radius: 10px;
   }
   .coverbox { transform: rotate(-3deg); align-self: start; }
   .cover { display: block; width: 96px; height: 144px; border-radius: 8px; object-fit: cover; background: var(--line); box-shadow: 4px 4px 0 var(--tone-soft); }
@@ -216,9 +198,9 @@
   .rec h2 { font-weight: 600; font-size: 1.3rem; line-height: 1.2; margin: 0; }
   .by { color: var(--muted); font-size: 14px; margin: 2px 0 10px; }
   .note {
-    margin: 0; padding: 12px 14px; background: var(--butter); border-radius: 6px 18px 18px 18px;
+    margin: 0; padding: 12px 16px; background: var(--note-bg); border: 2px solid var(--note-line); border-radius: 22px 22px 22px 8px; box-shadow: 0 3px 0 var(--note-line);
     font-family: "Caveat", cursive; font-weight: 500; font-size: 1.35rem; line-height: 1.2;
-    white-space: pre-wrap; overflow-wrap: anywhere; color: #5A2A4A;
+    white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink);
   }
 
   /* Oceny */
@@ -234,6 +216,7 @@
   .stars .on { color: var(--star); }
   .unread { color: var(--muted); font-size: 13px; }
   .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+  .ver { text-align: center; color: var(--muted); font-size: 12px; opacity: .6; margin: 34px 0 0; }
   .empty { text-align: center; color: var(--muted); padding: 40px 10px; font-family: "Caveat", cursive; font-size: 1.6rem; }
   .toast {
     position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
@@ -289,6 +272,7 @@
 
   <div class="filters" id="filters" role="group" aria-label="Filtruj polecenia"></div>
   <div class="list" id="list" aria-live="polite"></div>
+  <p class="ver">wersja 4</p>
 </div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -509,10 +493,21 @@ async function search(q) {
       </li>`).join("");
   } catch { $("suggest").innerHTML = ""; }
 }
+/* Łączy to, co wpisałaś (z ogonkami), z tytułem z bazy (często bez ogonków).
+   "małe kob" + "Male kobietki"  ->  "Małe kobietki" */
+function mergeTitle(typed, found) {
+  const t = String(typed || "").trim(), f = String(found || "").trim();
+  const ft = fold(t), ff = fold(f);
+  if (t && ff.startsWith(ft) && ft.length === t.length && ff.length === f.length) {
+    const merged = t + f.slice(t.length);
+    return /^[A-ZĄĆĘŁŃÓŚŹŻ]/.test(f) ? merged.charAt(0).toUpperCase() + merged.slice(1) : merged;
+  }
+  return f;
+}
 function pick(i) {
   const d = ($("suggest")._docs || [])[i]; if (!d) return;
   // Open Library często zapisuje polskie tytuły bez ogonków. Jeśli różnią się tylko ogonkami, zostaje to, co wpisałaś.
-  if (fold($("fTitle").value) !== fold(d.title)) $("fTitle").value = d.title;
+  $("fTitle").value = mergeTitle($("fTitle").value, d.title);
   if (!authorTouched || !$("fAuthor").value.trim()) {
     $("fAuthor").value = d.author_name ? d.author_name[0] : "";
     authorTouched = false;
