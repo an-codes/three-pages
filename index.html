@@ -482,9 +482,15 @@ $("list").addEventListener("click", async (e) => {
 });
 
 /* ---------- formularz + wyszukiwarka Open Library ---------- */
+/* porównywanie bez polskich liter i wielkości liter: "Małe" == "male" */
+const fold = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l").trim();
+let authorTouched = false;                       // true, gdy autor został wpisany ręcznie
+$("fAuthor").addEventListener("input", () => { authorTouched = true; });
+
 let t;
 $("fTitle").addEventListener("input", () => {
-  picked = null; $("picked").classList.remove("on");
+  // okładka zostaje, jeśli tytuł różni się tylko polskimi literami lub wielkością liter
+  if (picked && fold($("fTitle").value) !== fold(picked.title)) { picked = null; $("picked").classList.remove("on"); }
   clearTimeout(t);
   const q = $("fTitle").value.trim();
   if (q.length < 3) { $("suggest").innerHTML = ""; return; }
@@ -505,9 +511,13 @@ async function search(q) {
 }
 function pick(i) {
   const d = ($("suggest")._docs || [])[i]; if (!d) return;
-  $("fTitle").value = d.title;
-  $("fAuthor").value = d.author_name ? d.author_name[0] : "";
-  picked = { cover_id: d.cover_i || null };
+  // Open Library często zapisuje polskie tytuły bez ogonków. Jeśli różnią się tylko ogonkami, zostaje to, co wpisałaś.
+  if (fold($("fTitle").value) !== fold(d.title)) $("fTitle").value = d.title;
+  if (!authorTouched || !$("fAuthor").value.trim()) {
+    $("fAuthor").value = d.author_name ? d.author_name[0] : "";
+    authorTouched = false;
+  }
+  picked = { cover_id: d.cover_i || null, title: d.title };
   $("suggest").innerHTML = "";
   if (d.cover_i) {
     $("pickedImg").src = `https://covers.openlibrary.org/b/id/${d.cover_i}-S.jpg`;
@@ -535,7 +545,7 @@ $("fSave").addEventListener("click", async () => {
       cover_id: picked?.cover_id || null,
     });
     ["fTitle", "fAuthor", "fBlurb"].forEach((id) => ($(id).value = ""));
-    picked = null; $("picked").classList.remove("on"); $("suggest").innerHTML = "";
+    picked = null; authorTouched = false; $("picked").classList.remove("on"); $("suggest").innerHTML = "";
     $("addBox").open = false;
     toast("Dodano!");
   } catch (err) { toast("Nie udało się zapisać. Spróbuj ponownie"); console.error(err); }
