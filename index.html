@@ -217,6 +217,7 @@
   .unread { color: var(--muted); font-size: 13px; }
   .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
   .ver { text-align: center; color: var(--muted); font-size: 12px; opacity: .6; margin: 34px 0 0; }
+  .rec[hidden], .row[hidden] { display: none; }
   .empty { text-align: center; color: var(--muted); padding: 40px 10px; font-family: "Caveat", cursive; font-size: 1.6rem; }
   .toast {
     position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
@@ -271,8 +272,9 @@
   </details>
 
   <div class="filters" id="filters" role="group" aria-label="Filtruj polecenia"></div>
-  <div class="list" id="list" aria-live="polite"></div>
-  <p class="ver">wersja 4</p>
+  <div class="list" id="list"></div>
+  <div class="empty" id="empty" role="status" hidden></div>
+  <p class="ver">wersja 5</p>
 </div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -426,27 +428,84 @@ function ratersHTML(r, slot) {
     return `<div class="rater ${isMe ? "me" : ""}"><span class="nm">${isMe ? "Ty" : esc(name)}</span>${stars}</div>`;
   }).join("");
 }
+/* Karty są tworzone raz i potem tylko aktualizowane, więc okładki nie ładują się na nowo.
+   cards: id -> { el, ssig (dane książki), rsig (oceny), wsig (przycisk Usuń) } */
+const cards = new Map();
+
+function buildCard(r, slot) {
+  const el = document.createElement("article");
+  el.className = "rec";
+  el.dataset.slot = slot;
+  el.innerHTML = `${coverHTML(r)}
+    <div>
+      <span class="from">${esc(r.from_name)} poleca</span>
+      <h2>${esc(r.title)}</h2>
+      ${r.author ? `<div class="by">${esc(r.author)}</div>` : ""}
+      ${r.blurb ? `<p class="note">${esc(r.blurb)}</p>` : ""}
+      <div class="ratings"></div>
+      <div class="row" hidden></div>
+    </div>`;
+  return el;
+}
+
 function renderList() {
-  const shown = recs.filter((r) => filter === "all" || String(slotOf(r.from_name)) === filter);
-  if (!shown.length) {
-    $("list").innerHTML = `<div class="empty">${recs.length ? "Nic tu jeszcze nie ma" : "Na razie pusto. Poleć pierwszą książkę!"}</div>`;
-    return;
-  }
-  $("list").innerHTML = shown.map((r) => {
+  const list = $("list");
+  const seen = new Set();
+  let prev = null, visible = 0;
+
+  for (const r of recs) {
+    seen.add(r.id);
     const slot = slotOf(r.from_name);
     const mine = slot === me;
-    return `<article class="rec" data-slot="${slot}">
-      ${coverHTML(r)}
-      <div>
-        <span class="from">${esc(r.from_name)} poleca</span>
-        <h2>${esc(r.title)}</h2>
-        ${r.author ? `<div class="by">${esc(r.author)}</div>` : ""}
-        ${r.blurb ? `<p class="note">${esc(r.blurb)}</p>` : ""}
-        <div class="ratings">${ratersHTML(r, slot)}</div>
-        ${mine ? `<div class="row"><button class="ghost" data-act="del" data-id="${esc(r.id)}">Usuń</button></div>` : ""}
-      </div>
-    </article>`;
-  }).join("");
+
+    // 1) sama książka (tytuł, autor, opis, okładka): budujemy kartę tylko, gdy te dane się zmieniły
+    const ssig = [r.from_name, r.title, r.author, r.blurb, r.cover_id].join("\u0001");
+    let c = cards.get(r.id);
+    if (!c || c.ssig !== ssig) {
+      const el = buildCard(r, slot);
+      if (c) c.el.replaceWith(el);
+      c = { el, ssig, rsig: "", wsig: "" };
+      cards.set(r.id, c);
+    }
+
+    // 2) oceny: przerysowujemy tylko gwiazdki, i tylko gdy się zmieniły
+    const rsig = JSON.stringify([r.ratings || {}, me, slot]);
+    if (c.rsig !== rsig) {
+      const box = c.el.querySelector(".ratings");
+      const focused = box.contains(document.activeElement) ? document.activeElement.dataset.n : null;
+      box.innerHTML = ratersHTML(r, slot);
+      if (focused) { const b = box.querySelector(`button[data-n="${focused}"]`); if (b) b.focus(); }
+      c.rsig = rsig;
+    }
+
+    // 3) przycisk Usuń: tylko przy własnych poleceniach
+    const wsig = String(mine);
+    if (c.wsig !== wsig) {
+      const row = c.el.querySelector(".row");
+      row.innerHTML = mine ? `<button class="ghost" data-act="del" data-id="${esc(r.id)}">Usuń</button>` : "";
+      row.hidden = !mine;
+      c.wsig = wsig;
+    }
+
+    // 4) filtr: karty tylko chowamy i pokazujemy
+    const show = filter === "all" || String(slot) === filter;
+    c.el.hidden = !show;
+    if (show) visible++;
+
+    // 5) kolejność w DOM taka jak w danych (ruszamy kartę tylko, gdy stoi w złym miejscu)
+    const ref = prev ? prev.nextElementSibling : list.firstElementChild;
+    if (c.el !== ref) list.insertBefore(c.el, ref);
+    prev = c.el;
+  }
+
+  // usunięte książki
+  for (const [id, c] of cards) {
+    if (!seen.has(id)) { c.el.remove(); cards.delete(id); }
+  }
+
+  const empty = $("empty");
+  empty.hidden = visible > 0;
+  if (!visible) empty.textContent = recs.length ? "Nic tu jeszcze nie ma" : "Na razie pusto. Poleć pierwszą książkę!";
 }
 $("list").addEventListener("click", async (e) => {
   const b = e.target.closest("button[data-act]");
