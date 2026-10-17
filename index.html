@@ -14,7 +14,7 @@
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fredoka:wght@400;500;600&family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Nunito:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #FFF5F8;
@@ -63,7 +63,7 @@
   body {
     margin: 0;
     color: var(--ink);
-    font-family: "Fredoka", system-ui, sans-serif;
+    font-family: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;
     font-size: 16px;
     line-height: 1.5;
   }
@@ -132,7 +132,6 @@
   .login-err { margin: 0; min-height: 1.4em; font-size: 14px; color: #C2306B; }
   @media (prefers-color-scheme: dark) { .login-err { color: #FF9CC0; } }
 
-  .banner { background: var(--butter); border-radius: 16px; padding: 10px 16px; margin-bottom: 20px; font-size: 14px; color: #5A2A4A; }
 
   .filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
   .filters button {
@@ -157,7 +156,7 @@
   .form { padding: 0 22px 22px; display: grid; gap: 14px; }
   label { display: grid; gap: 5px; font-size: 14px; font-weight: 500; }
   input[type=text], input[type=password], textarea {
-    font: inherit; color: var(--ink); background: var(--bg);
+    font: inherit; font-size: 16px; font-weight: 400; color: var(--ink); background: var(--bg);
     border: 2px solid var(--line); border-radius: 16px; padding: 10px 14px; width: 100%;
   }
   textarea { min-height: 90px; resize: vertical; }
@@ -186,8 +185,10 @@
     position: relative;
     background: var(--card); border-radius: 26px; border: 2px solid var(--tone-soft);
     box-shadow: 0 6px 0 var(--tone-soft);
-    padding: 22px 18px 18px; display: grid; grid-template-columns: 96px 1fr; gap: 18px;
+    padding: 22px 18px 18px; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 18px;
   }
+  .rec > div { min-width: 0; }
+  .rec h2, .by { overflow-wrap: anywhere; }
   .rec[data-slot="0"] { --tone: var(--pink); --tone-soft: var(--pink-soft); --tone-text: #D6457F; }
   .rec[data-slot="1"] { --tone: var(--lav); --tone-soft: var(--lav-soft); --tone-text: #7D5BD0; }
   .rec[data-slot="2"] { --tone: var(--mint); --tone-soft: var(--mint-soft); --tone-text: #1E8A68; }
@@ -237,7 +238,7 @@
   .toast.show { opacity: 1; }
 
   @media (max-width: 480px) {
-    .rec { grid-template-columns: 76px 1fr; gap: 14px; padding: 22px 14px 16px; }
+    .rec { grid-template-columns: 76px minmax(0, 1fr); gap: 14px; padding: 22px 14px 16px; }
     .cover, .fallback { width: 76px; height: 114px; }
     .fallback { font-size: 12px; }
   }
@@ -262,10 +263,6 @@
     <h1><span class="sub">bookclub</span>Trzy Strony</h1>
     <div class="who" role="group" aria-label="Kim jesteś?" id="who"><span>Jestem</span></div>
   </header>
-
-  <div class="banner" id="demoBanner" hidden>
-    <b>Tryb demo.</b> Książki zapisują się tylko w tej przeglądarce. Dodaj dane Firebase w pliku <code>index.html</code>, żebyście wszystkie widziały tę samą listę (kroki są w README).
-  </div>
 
   <details class="add" id="addBox">
     <summary>Poleć książkę</summary>
@@ -550,7 +547,6 @@ function toast(msg) {
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 }
-$("demoBanner").hidden = LIVE;
 renderWho();
 renderFilters();
 renderList();
