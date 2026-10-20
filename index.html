@@ -291,17 +291,12 @@
 <div class="toast" id="toast" role="status"></div>
 
 <script>
-/* ============ KONFIGURACJA: edytuj tę część ============ */
 const NAMES = ["Ania", "Zosia", "Asia"];
-
-// Adresy logowania to ania@trzystrony.app, zosia@trzystrony.app, asia@trzystrony.app.
-// To nie są prawdziwe skrzynki pocztowe, tylko loginy. Zakładasz je w Firebase (patrz README).
+  
 const LOGIN_DOMAIN = "trzystrony.app";
 const loginEmail = (i) =>
   NAMES[i].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") + "@" + LOGIN_DOMAIN;
 
-// Wklej obiekt konfiguracji z Firebase (Ustawienia projektu > Twoje aplikacje > Aplikacja internetowa).
-// Zostaw apiKey puste, żeby wypróbować tryb demo (zapis tylko w tej przeglądarce).
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDaY7dGK6FqxZrAAaht3EGa1y0FZSzhb98",
   authDomain: "trzy-strony-a23d1.firebaseapp.com",
@@ -310,7 +305,6 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "407931454893",
   appId: "1:407931454893:web:627123153481048377cd24"
 };
-/* ======================================================== */
 
 const LIVE = Boolean(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId);
 const $ = (id) => document.getElementById(id);
@@ -327,7 +321,6 @@ const store = {
 };
 
 /* ---------- warstwa danych ----------
-   Każde api ma: subscribe(cb), add(rec), remove(id), rate(id, name, gwiazdki|null) */
 function localApi() {
   let listener = () => {};
   const read = () => JSON.parse(store.get("recs") || "[]");
