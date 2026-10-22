@@ -320,7 +320,7 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, v); } catch { mem[k] = v; } },
 };
 
-/* ---------- warstwa danych ----------
+/* ---------- warstwa danych ---------- */
 function localApi() {
   let listener = () => {};
   const read = () => JSON.parse(store.get("recs") || "[]");
